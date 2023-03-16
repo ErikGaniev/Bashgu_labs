@@ -1,3 +1,5 @@
+// ConsoleApplication2.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+//
 
 #include <iostream>
 #include <cmath>   
@@ -29,10 +31,6 @@ double dy(double k_1, double k_2, double k_3, double k_4)
 
 double* method_rundi()
 {
-    double k1 = f_2(0, y_0);
-    double k2 = f_2(0 + h / 2, y_d0 + h * k1 / 2);
-    double k3 = f_2(0 + h / 2, y_d0 + h * k2 / 2);
-    double k4 = f_2(0 + h, y_d0 + h * k3);
     double *yrk=new double[11];
     yrk[0] = y_d0;// запуск функции нахождения 
 
@@ -40,10 +38,10 @@ double* method_rundi()
 
     for (int i = 1; i < 11; i++)
     {
-        k1 = f_2(xi[i]  , yrk[i - 1]);
-        k2 = f_2(xi[i] + h / 2, yrk[i - 1] + h * k1 / 2);
-        k3 = f_2(xi[i] + h / 2, yrk[i - 1] + h * k2 / 2);
-        k4 = f_2(xi[i] + h, yrk[i - 1] + h * k3);
+        double k1 = f_2(xi[i-1]  , yrk[i - 1]);
+        double k2 = f_2(xi[i-1] + h / 2, yrk[i - 1] + h * k1 / 2);
+        double k3 = f_2(xi[i-1] + h / 2, yrk[i - 1] + h * k2 / 2);
+        double k4 = f_2(xi[i-1] + h, yrk[i - 1] + h * k3);
         yrk[i] = yrk[i - 1] + dy(k1, k2, k3, k4);// запуск функции нахождения 
         cout << "x= " << xi[i]  << " y'= " << yd(xi[ i ])<< " f= " << yrk[i] << " ut-up= " << abs(yrk[i] - yd(xi[i])) << endl; // печать начального значения 
 
