@@ -1,0 +1,66 @@
+
+#include <iostream>
+#include <cmath>   
+//#include <easy_plot.hpp>
+using namespace std;
+double y_0 = 1, h = 0.1;
+double y_d0 = 2;
+double xi[11], yi[11], yr3[11];
+
+double y(double x)// заголовок функции
+{
+    return 1/cos(x)+sin(x)+x/cos(x);
+}
+
+double yd(double x)// заголовок функции
+{
+    return 1 / cos(x) + (1+x)*tan(x)/cos(x)+cos(x);
+}
+
+double f_2(double x, double y)// заголовок функции
+{
+    return (1+tan(x)*tan(x))*y-sin(3*x);
+}
+
+double dy(double k_1, double k_2, double k_3, double k_4)
+{
+    return h * (k_1 + 2 * k_2 + 2 * k_3 + k_4) / 6;
+}
+
+double* method_rundi()
+{
+    double k1 = f_2(2, y_0);
+    double k2 = f_2(2 + h / 2, y_d0 + h * k1 / 2);
+    double k3 = f_2(2 + h / 2, y_d0 + h * k2 / 2);
+    double k4 = f_2(2 + h, y_d0 + h * k3);
+    double yrk[11];
+    yrk[0] = y_d0;// запуск функции нахождения 
+
+    cout << "x= " << 2 << " y=f= " << yrk[0] << endl; // печать начального значения 
+
+    for (int i = 1; i < 11; i++)
+    {
+        k1 = f_2(xi[i]  , yrk[i - 1]);
+        k2 = f_2(xi[i] + h / 2, yrk[i - 1] + h * k1 / 2);
+        k3 = f_2(xi[i] + h / 2, yrk[i - 1] + h * k2 / 2);
+        k4 = f_2(xi[i] + h, yrk[i - 1] + h * k3);
+        yrk[i] = yrk[i - 1] + dy(k1, k2, k3, k4);// запуск функции нахождения 
+        cout << "x= " << xi[i]  << " y= " << yd(xi[ i ])<< " f= " << yrk[i] << " ut-up= " << abs(yrk[i] - yd(xi[i])) << endl; // печать начального значения 
+
+    }
+
+    return yrk;
+}
+
+int main()
+{   
+    for (int i = 0; i < 11; i++)
+    {
+        xi[i] = i * h;
+        yi[i] = y(xi[i]);
+        cout <<"x="<<xi[i]<<" y="<<yi[i] << endl;
+    }
+
+    double *otv2 = method_rundi();
+   
+ }
