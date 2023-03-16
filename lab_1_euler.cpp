@@ -28,13 +28,13 @@ double dy(double k_1, double k_2, double k_3, double k_4)
 double* method_euler()
 {
     double f[11];
-    f[0] = euler(2, y_0);// запуск функции нахождения 
+    f[0] =y_0;// запуск функции нахождения 
     cout << f[0] << " " << y(2) << endl; // печать начального значения 
 
     for (int i = 1; i < 11; i++)
     {
-        f[i] = euler(2 + i * h, h * f[i - 1]);// запуск функции нахождения 
-        cout << "x= " << 2 + i * h << " f= " << f[i] << " y= " << y(2 + i * h) << " ut-up= " << abs(f[i] - y(2 + i * h)) << endl; // печать значения 
+        f[i] = euler(xi[i-1],  f[i - 1]);// запуск функции нахождения 
+        cout << "x= " << xi[i] << " f= " << f[i] << " y= " << yi[i] << " ut-up= " << abs(f[i] -yi[i] ) << endl; // печать значения 
     }
 
     return f;
