@@ -1,122 +1,136 @@
+
+// ConsoleApplication4.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
+//
 using namespace std;
 #include <iostream>
-#include <math.h>
 #include <vector>
+#include <cmath>
 #include <fstream>
 
-
+double maxu = 0;
 double pi = acos(-1);
-
-
-
-vector <double> Progon(int n, vector <double> a, vector <double> b, vector <double> c, vector <double>f)
+vector<double> progon(int N, vector <double> a, vector <double>  b, vector <double> c, vector <double> f)
 {
-    vector <double> p(n + 1), q(n + 1), m(n + 1);
+    vector <double> m(N + 1), p(N + 1), q(N + 1);
     p[0] = b[0] / a[0];
     q[0] = f[0] / a[0];
 
-    //прямая прогонка
-    for (int i = 1; i <= n; i++)
+    for (int i = 1; i <= N; i++)
     {
         p[i] = b[i] / (a[i] - c[i] * p[i - 1]);
-        q[i] = (f[i] + c[i] * q[i - 1]) / (a[i] - c[i] * p[i - 1]);
+        q[i] = (f[i]+c[i]*q[i-1]) / (a[i] - c[i] * p[i - 1]);
     }
-    //3) m - массив ответов
-    m[n] = q[n];
-    //4) обратная прогонка
-    for (int i = n - 1; i >= 0; i--) {
-        m[i] =( p[i] * m[i + 1] + q[i]);
+
+    m[N] = q[N];
+    for (int i = N - 1; i >= 0; i--)
+    {
+        m[i] = p[i] * m[i + 1] + q[i];
+
     }
 
     return m;
+
 }
 
-
+double analitic(double x,double t)
+{  
+    return  (1 - exp(-pi * pi * t)) * sin(pi*x) / (pi * pi);
+}
 
 int main()
 {
    
-    //1)строим сетку
-//интервал
+    //cout << pi<<endl;
+    double koef_a = 1;
     double ax = 0;
-    double bx =pi/4;
-    const int N = 100;// количество точек
-    double h = (bx - ax) /N;//шаг
+    double bx = 1;
+    const int N = 100;
+    double eps = 0.001;
 
-    cout << "pi= " << pi << endl;
-    cout << "h= " << h << endl;
+    double h = (bx - ax) / N;  //шаг по х
+    double tay = 0.01;     // шах по времени
 
-
-    //задаем точки x
-    cout << "x[i]: ";
-    vector <double> x(N + 1);
-    for (int i = 0; i <= N; i++) {
-        x[i] = ax + i * h;
-       // cout<<" " << x[i] ;
-    }
-
-    // 2)задаем массивы  а, в, с, и f для прогонки
+   
+    vector <double> x(N+1),u(N+1),uold(N+1),du(N+1);
     vector <double> a(N + 1), b(N + 1), c(N + 1), f(N + 1);
-    for (int i = 1; i < N; i++) {
+    vector <double> umaxtit(1000);
+   
+    //заполнение массива х
 
-        a[i] =2*  (1 + h * h / (cos(x[i]) * cos(x[i]))) ;
-        b[i] = 1;
-        c[i] = 1;
-        f[i] = 0;
-       // cout << c[i]<<" ";
+    for (int i = 0; i <= N; i++)
+    {
+        x[i] = ax + i * h;
+        uold[i] = 0;
+        //cout << x[i]<<" " << uold[i] << endl;
     }
 
-    a[0] = 1;
-    b[0] = 1;
-    c[0] = 0;
-    f[0] = - h;
+    int k = 0;
+    double maxU = 1;
 
-    a[N] = 1;
-    b[N] = 0;
-    c[N] = 1;
-    f[N] = 2*h;
+    //цикл по времени
+    do {
 
+        //задаем коэфиценты
+
+        for (int i = 1; i < N; i++)
+        {
+            a[i] = 1 + 2 * koef_a * tay / (h * h);
+            b[i] = koef_a * tay / (h * h);
+            c[i] = koef_a * tay / (h * h);
+            f[i] = uold[i]+tay*sin(pi*x[i]);
+            //cout << uold[i]<<endl;
+        }
+
+        a[0] = 1;
+        b[0] = 0;
+        c[0] = 0;
+        f[0] = 0;
+
+        a[N] = 1;
+        b[N] = 0;
+        c[N] = 0;
+        f[N] = 0;
+
+        u = progon(N, a, b, c, f);
+
+        //Разница du
+
+        maxu = 0;
+       
+        for (int i = 0; i <= N; i++)
+        {
+            du[i] = abs(u[i] - uold[i]);
+            maxu = max(maxu, du[i]);
+        }
+        umaxtit[k] = maxu;
+
+        for (int i = 0; i <= N; i++) uold[i] = u[i];
+        k++;
+    }
+    while (maxu > eps);
+
+ 
+   
    
 
+    //сравнение с точным
 
-    //точное решение
-    vector <double> yt(N + 1);
-    for (int i = 0; i <= N; i++) {
+    vector<double> time(1000);
+        for (int i = 0; i <= k; i++) time[i] = i * tay;
 
-        yt[i] = tan(x[i]);
+    cout << time[k] << endl;
+    vector<double> u_exact(N + 1),diff_u(N+1);
 
+    //ofstream fout("u.txt ");
+     cout <<"x "<< "u"  << " u_exact"  << " diff"  << endl;
+    for (int i = 0; i < N+1; i++)
+    {
+        u_exact[i] = analitic(x[i], time[k]);
+        diff_u[i] = abs(u[i] - u_exact[i]);
+        cout  <<x[i] <<" " << u[i] << " " << u_exact[i] << " " << diff_u[i] << endl;
+      
     }
 
-    vector <double> y = Progon(N, a, b, c, f);
-
-   // ofstream fout("y.txt");
-   
-    //fout << "x[i]="  << " y[i]="  << " yt[i]=" << " dy="  << endl;
-
-    //for (int i = 0; i <= N; i++)
-      //  cout <<"x[i]=" << x[i] << " y[i]=" << y[i] << " yt[i]=" << yt[i] << " dy=" << abs(yt[i] - y[i]) << endl;
-        //fout  << x[i] << " " << y[i] << " " << yt[i] << " " << abs(yt[i] - y[i]) << endl;
-  
     //fout.close();
-
-    cout << "x[i]=" << endl;
-    for (int i = 0; i <= N; i++)
-        cout  << x[i] <<",";
-
-    cout <<endl<< "y[i] = " << endl;
-    for (int i = 0; i <= N; i++)
-        cout  << y[i] <<"," ;
-
-    cout<<endl << "yt[i] = " << endl;
-    for (int i = 0; i <= N; i++)
-        cout << yt[i] << "," ;
-
-    cout<<endl << "dy = " << endl;
-    for (int i = 0; i <= N; i++)
-        cout << abs(yt[i] - y[i]) << "," ;
-
-    for (int i = 0; i <= N; i++)
-        cout << "x[i]=" << x[i] << " y[i]=" << y[i] << " yt[i]=" << yt[i] << " dy=" << abs(yt[i] - y[i]) << endl;
-
-    return 0;
+   // cout << analitic(1,1);
 }
