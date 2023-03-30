@@ -1,0 +1,122 @@
+using namespace std;
+#include <iostream>
+#include <math.h>
+#include <vector>
+#include <fstream>
+
+
+double pi = acos(-1);
+
+
+
+vector <double> Progon(int n, vector <double> a, vector <double> b, vector <double> c, vector <double>f)
+{
+    vector <double> p(n + 1), q(n + 1), m(n + 1);
+    p[0] = b[0] / a[0];
+    q[0] = f[0] / a[0];
+
+    //прямая прогонка
+    for (int i = 1; i <= n; i++)
+    {
+        p[i] = b[i] / (a[i] - c[i] * p[i - 1]);
+        q[i] = (f[i] + c[i] * q[i - 1]) / (a[i] - c[i] * p[i - 1]);
+    }
+    //3) m - массив ответов
+    m[n] = q[n];
+    //4) обратная прогонка
+    for (int i = n - 1; i >= 0; i--) {
+        m[i] =( p[i] * m[i + 1] + q[i]);
+    }
+
+    return m;
+}
+
+
+
+int main()
+{
+   
+    //1)строим сетку
+//интервал
+    double ax = 0;
+    double bx =pi/4;
+    const int N = 100;// количество точек
+    double h = (bx - ax) /N;//шаг
+
+    cout << "pi= " << pi << endl;
+    cout << "h= " << h << endl;
+
+
+    //задаем точки x
+    cout << "x[i]: ";
+    vector <double> x(N + 1);
+    for (int i = 0; i <= N; i++) {
+        x[i] = ax + i * h;
+       // cout<<" " << x[i] ;
+    }
+
+    // 2)задаем массивы  а, в, с, и f для прогонки
+    vector <double> a(N + 1), b(N + 1), c(N + 1), f(N + 1);
+    for (int i = 1; i < N; i++) {
+
+        a[i] =2*  (1 + h * h / (cos(x[i]) * cos(x[i]))) ;
+        b[i] = 1;
+        c[i] = 1;
+        f[i] = 0;
+       // cout << c[i]<<" ";
+    }
+
+    a[0] = 1;
+    b[0] = 1;
+    c[0] = 0;
+    f[0] = - h;
+
+    a[N] = 1;
+    b[N] = 0;
+    c[N] = 1;
+    f[N] = 2*h;
+
+   
+
+
+    //точное решение
+    vector <double> yt(N + 1);
+    for (int i = 0; i <= N; i++) {
+
+        yt[i] = tan(x[i]);
+
+    }
+
+    vector <double> y = Progon(N, a, b, c, f);
+
+   // ofstream fout("y.txt");
+   
+    //fout << "x[i]="  << " y[i]="  << " yt[i]=" << " dy="  << endl;
+
+    //for (int i = 0; i <= N; i++)
+      //  cout <<"x[i]=" << x[i] << " y[i]=" << y[i] << " yt[i]=" << yt[i] << " dy=" << abs(yt[i] - y[i]) << endl;
+        //fout  << x[i] << " " << y[i] << " " << yt[i] << " " << abs(yt[i] - y[i]) << endl;
+  
+    //fout.close();
+
+    cout << "x[i]=" << endl;
+    for (int i = 0; i <= N; i++)
+        cout  << x[i] <<",";
+
+    cout <<endl<< "y[i] = " << endl;
+    for (int i = 0; i <= N; i++)
+        cout  << y[i] <<"," ;
+
+    cout<<endl << "yt[i] = " << endl;
+    for (int i = 0; i <= N; i++)
+        cout << yt[i] << "," ;
+
+    cout<<endl << "dy = " << endl;
+    for (int i = 0; i <= N; i++)
+        cout << abs(yt[i] - y[i]) << "," ;
+
+    for (int i = 0; i <= N; i++)
+        cout << "x[i]=" << x[i] << " y[i]=" << y[i] << " yt[i]=" << yt[i] << " dy=" << abs(yt[i] - y[i]) << endl;
+
+    return 0;
+}
