@@ -91,7 +91,7 @@ while maxu > eps:
     k += 1
 
 # сравнение с точным
-
+int_inc = k
 
 time = np.zeros(1000)
 for i in range(k + 1):  # (int i = 0; i <= k; i++)
@@ -109,7 +109,7 @@ for i in range(N + 1):
 
 plt.figure()
 plt.plot(x, u, "o-", label="y")
-plt.plot(x, u_exact, "o-", label="yt")
+plt.plot(x, u_exact, "o-", label="y_exact")
 plt.title("график")
 plt.xlabel("x")
 plt.xlabel("y")
@@ -120,24 +120,19 @@ plt.show()
 y = np.zeros(N + 1)
 yold = np.zeros(N + 1)
 dy = np.zeros(N + 1)
-k = 0
 maxu = 1
-
+print(int_inc)
+# print(yold)
 eps1 = 6 * 10 ** -3
+koef_a = 1
+tay = 10 ** -5
 # цикл по времени
-while maxu > eps1:
+for j in range(25* 10 ** 3):
     for i in range(1, N):
-        y[i] = koef_a * tay * yold[i + 1] / (h ** 2) + yold[i] * (1 - 2 * koef_a * tay / (h ** 2)) + koef_a * tay * \
-               yold[i - 1] / (h ** 2) + np.sin(pi * x[i]) * tay
-        # print(y[i])
-    maxu = 0
-    for i in range(N + 1):  # (int i = 0; i <= N; i++)
-        dy[i] = abs(y[i] - yold[i])
-        maxu = max(maxu, dy[i])
-        # print(maxu)
+        y[i] = koef_a * tay * (yold[i + 1] + yold[i - 1]) / (h ** 2) + yold[i] * (
+                1 - 2 * koef_a * tay / (h ** 2)) + np.sin(pi * x[i]) * tay
     for i in range(N + 1):  # (int i = 0; i <= N; i++)
         yold[i] = y[i]
-    k += 1
 
 diff_y = np.zeros(N + 1)
 for i in range(N + 1):
@@ -146,7 +141,7 @@ for i in range(N + 1):
 
 plt.figure()
 plt.plot(x, u, "o-", label="y")
-plt.plot(x, u_exact, "o-", label="yt")
+plt.plot(x, u_exact, "o-", label="y_exact")
 plt.plot(x, y, "o-", label="y2")
 plt.title("график")
 plt.xlabel("x")
@@ -161,7 +156,8 @@ uoid_KN = np.zeros(N + 1)
 du_KN = np.zeros(N + 1)
 k = 0
 maxu = 1
-
+koef_a = 1
+tay = 0.01
 # цикл по времени
 while maxu > eps:
     # задаем коэфиценты
@@ -209,7 +205,7 @@ for i in range(N + 1):
 
 plt.figure()
 plt.plot(x, u, "o-", label="y")
-plt.plot(x, u_exact, "o-", label="yt")
+plt.plot(x, u_exact, "o-", label="y_exact")
 plt.plot(x, y, "o-", label="y2")
 plt.plot(x, u_KN, "o-", label="y_KN")
 plt.title("график")
@@ -218,3 +214,4 @@ plt.xlabel("y")
 plt.legend()
 plt.grid()
 plt.show()
+
