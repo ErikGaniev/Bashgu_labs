@@ -1,136 +1,220 @@
+import numpy as np
+import matplotlib.pyplot as plt
 
-// ConsoleApplication4.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-using namespace std;
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <fstream>
+maxu = 0
+pi = np.pi
 
-double maxu = 0;
-double pi = acos(-1);
-vector<double> progon(int N, vector <double> a, vector <double>  b, vector <double> c, vector <double> f)
-{
-    vector <double> m(N + 1), p(N + 1), q(N + 1);
-    p[0] = b[0] / a[0];
-    q[0] = f[0] / a[0];
 
-    for (int i = 1; i <= N; i++)
-    {
-        p[i] = b[i] / (a[i] - c[i] * p[i - 1]);
-        q[i] = (f[i]+c[i]*q[i-1]) / (a[i] - c[i] * p[i - 1]);
-    }
+def progon(N, a, b, c, f):
+    m = np.zeros(N + 1)
+    p = np.array([b[0] / a[0]])
+    q = np.array([f[0] / a[0]])
 
-    m[N] = q[N];
-    for (int i = N - 1; i >= 0; i--)
-    {
-        m[i] = p[i] * m[i + 1] + q[i];
+    for i in range(1, N + 1):  # (int i = 1; i <= N; i++)
+        p = np.append(p, b[i] / (a[i] - c[i] * p[i - 1]))
+        q = np.append(q, (f[i] + c[i] * q[i - 1]) / (a[i] - c[i] * p[i - 1]))
 
-    }
+    m[N] = q[N]
+    for i in range(N - 1, -1, -1):  # (int i = N - 1; i >= 0; i--)
+        m[i] = p[i] * m[i + 1] + q[i]
 
-    return m;
+    return m
 
-}
 
-double analitic(double x,double t)
-{  
-    return  (1 - exp(-pi * pi * t)) * sin(pi*x) / (pi * pi);
-}
+def analitic(x, t):
+    return (1 - np.exp(-pi * pi * t)) * np.sin(pi * x) / (pi * pi)
 
-int main()
-{
-   
-    //cout << pi<<endl;
-    double koef_a = 1;
-    double ax = 0;
-    double bx = 1;
-    const int N = 100;
-    double eps = 0.001;
 
-    double h = (bx - ax) / N;  //шаг по х
-    double tay = 0.01;     // шах по времени
+print(pi)
+koef_a = 1
+ax = 0
+bx = 1
+N = 100
+eps = 0.001
 
-   
-    vector <double> x(N+1),u(N+1),uold(N+1),du(N+1);
-    vector <double> a(N + 1), b(N + 1), c(N + 1), f(N + 1);
-    vector <double> umaxtit(1000);
-   
-    //заполнение массива х
+h = (bx - ax) / N  # шаг по х
+tay = 0.01  # шах по времени
 
-    for (int i = 0; i <= N; i++)
-    {
-        x[i] = ax + i * h;
-        uold[i] = 0;
-        //cout << x[i]<<" " << uold[i] << endl;
-    }
+x = np.array([])
+u = np.array([])
+uoid = np.zeros(N + 1)
+du = np.zeros(N + 1)
+umaxtit = np.zeros(1000)
+umaxtit_2 = np.zeros(1000)
+# заполнение массива х
 
-    int k = 0;
-    double maxU = 1;
+for i in range(N + 1):  # (int i = 0; i <= N; i++)
+    x = np.append(x, ax + i * h)
+    # print(x)
+    # uold[i] = 0
+    # print(x[i],uoid[i])
 
-    //цикл по времени
-    do {
+k = 0
+maxu = 1
 
-        //задаем коэфиценты
+# цикл по времени
+while maxu > eps:
+    # задаем коэфиценты
 
-        for (int i = 1; i < N; i++)
-        {
-            a[i] = 1 + 2 * koef_a * tay / (h * h);
-            b[i] = koef_a * tay / (h * h);
-            c[i] = koef_a * tay / (h * h);
-            f[i] = uold[i]+tay*sin(pi*x[i]);
-            //cout << uold[i]<<endl;
-        }
+    a = np.array([1])
+    b = np.array([0])
+    c = np.array([0])
+    f = np.array([0])
 
-        a[0] = 1;
-        b[0] = 0;
-        c[0] = 0;
-        f[0] = 0;
+    for i in range(1, N):  # (int i = 1; i < N; i++)
+        a = np.append(a, 1 + 2 * koef_a * tay / (h * h))
+        b = np.append(b, koef_a * tay / (h * h))
+        c = np.append(c, koef_a * tay / (h * h))
+        f = np.append(f, uoid[i] + tay * np.sin(pi * x[i]))
 
-        a[N] = 1;
-        b[N] = 0;
-        c[N] = 0;
-        f[N] = 0;
+        # cout << uold[i]<<endl;
 
-        u = progon(N, a, b, c, f);
+    a = np.append(a, 1)
+    b = np.append(b, 0)
+    c = np.append(c, 0)
+    f = np.append(f, 0)
 
-        //Разница du
+    u = progon(N, a, b, c, f)
 
-        maxu = 0;
-       
-        for (int i = 0; i <= N; i++)
-        {
-            du[i] = abs(u[i] - uold[i]);
-            maxu = max(maxu, du[i]);
-        }
-        umaxtit[k] = maxu;
+    # Разница du
 
-        for (int i = 0; i <= N; i++) uold[i] = u[i];
-        k++;
-    }
-    while (maxu > eps);
+    maxu = 0
 
- 
-   
-   
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        du[i] = abs(u[i] - uoid[i])
+        maxu = max(maxu, du[i])
 
-    //сравнение с точным
+    umaxtit[k] = maxu
 
-    vector<double> time(1000);
-        for (int i = 0; i <= k; i++) time[i] = i * tay;
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        uoid[i] = u[i]
+    k += 1
 
-    cout << time[k] << endl;
-    vector<double> u_exact(N + 1),diff_u(N+1);
+# сравнение с точным
 
-    //ofstream fout("u.txt ");
-     cout <<"x "<< "u"  << " u_exact"  << " diff"  << endl;
-    for (int i = 0; i < N+1; i++)
-    {
-        u_exact[i] = analitic(x[i], time[k]);
-        diff_u[i] = abs(u[i] - u_exact[i]);
-        cout  <<x[i] <<" " << u[i] << " " << u_exact[i] << " " << diff_u[i] << endl;
-      
-    }
 
-    //fout.close();
-   // cout << analitic(1,1);
-}
+time = np.zeros(1000)
+for i in range(k + 1):  # (int i = 0; i <= k; i++)
+    time[i] = i * tay
+
+print(time[k])
+u_exact = np.zeros(N + 1)
+diff_u = np.zeros(N + 1)
+
+print("x  u  u_exact diff")
+for i in range(N + 1):
+    u_exact[i] = analitic(x[i], time[k])
+    diff_u[i] = abs(u[i] - u_exact[i])
+    print(x[i], " ", u[i], " ", u_exact[i], " ", diff_u[i])
+
+plt.figure()
+plt.plot(x, u, "o-", label="y")
+plt.plot(x, u_exact, "o-", label="yt")
+plt.title("график")
+plt.xlabel("x")
+plt.xlabel("y")
+plt.legend()
+plt.grid()
+plt.show()
+
+y = np.zeros(N + 1)
+yold = np.zeros(N + 1)
+dy = np.zeros(N + 1)
+k = 0
+maxu = 1
+
+eps1 = 6 * 10 ** -3
+# цикл по времени
+while maxu > eps1:
+    for i in range(1, N):
+        y[i] = koef_a * tay * yold[i + 1] / (h ** 2) + yold[i] * (1 - 2 * koef_a * tay / (h ** 2)) + koef_a * tay * \
+               yold[i - 1] / (h ** 2) + np.sin(pi * x[i]) * tay
+        # print(y[i])
+    maxu = 0
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        dy[i] = abs(y[i] - yold[i])
+        maxu = max(maxu, dy[i])
+        # print(maxu)
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        yold[i] = y[i]
+    k += 1
+
+diff_y = np.zeros(N + 1)
+for i in range(N + 1):
+    diff_y[i] = abs(y[i] - u_exact[i])
+    print(x[i], " ", y[i], " ", u_exact[i], " ", diff_y[i])
+
+plt.figure()
+plt.plot(x, u, "o-", label="y")
+plt.plot(x, u_exact, "o-", label="yt")
+plt.plot(x, y, "o-", label="y2")
+plt.title("график")
+plt.xlabel("x")
+plt.xlabel("y")
+plt.legend()
+plt.grid()
+plt.show()
+
+# print(analitic(1, 1))
+
+uoid_KN = np.zeros(N + 1)
+du_KN = np.zeros(N + 1)
+k = 0
+maxu = 1
+
+# цикл по времени
+while maxu > eps:
+    # задаем коэфиценты
+
+    a_KN = np.array([1])
+    b_KN = np.array([0])
+    c_KN = np.array([0])
+    f_KN = np.array([0])
+
+    for i in range(1, N):  # (int i = 1; i < N; i++)
+        a_KN = np.append(a_KN, 1 / tay + koef_a / (h * h))
+        b_KN = np.append(b_KN, koef_a / (2 * h * h))
+        c_KN = np.append(c_KN, koef_a / (2 * h * h))
+        f_KN = np.append(f_KN,
+                         uoid_KN[i] * (1 / tay - koef_a / (h ** 2)) + koef_a * (uoid_KN[i + 1] + uoid_KN[i - 1]) / (
+                                 2 * h ** 2) + np.sin(pi * x[i]))
+
+        # cout << uold[i]<<endl;
+
+    a_KN = np.append(a_KN, 1)
+    b_KN = np.append(b_KN, 0)
+    c_KN = np.append(c_KN, 0)
+    f_KN = np.append(f_KN, 0)
+
+    u_KN = progon(N, a_KN, b_KN, c_KN, f_KN)
+
+    # Разница du
+
+    maxu = 0
+
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        du_KN[i] = abs(u_KN[i] - uoid_KN[i])
+        maxu = max(maxu, du_KN[i])
+
+    umaxtit[k] = maxu
+
+    for i in range(N + 1):  # (int i = 0; i <= N; i++)
+        uoid_KN[i] = u_KN[i]
+    k += 1
+
+diff_yKN = np.zeros(N + 1)
+for i in range(N + 1):
+    diff_yKN[i] = abs(u_KN[i] - u_exact[i])
+    print(x[i], " ", u_KN[i], " ", u_exact[i], " ", diff_yKN[i])
+
+plt.figure()
+plt.plot(x, u, "o-", label="y")
+plt.plot(x, u_exact, "o-", label="yt")
+plt.plot(x, y, "o-", label="y2")
+plt.plot(x, u_KN, "o-", label="y_KN")
+plt.title("график")
+plt.xlabel("x")
+plt.xlabel("y")
+plt.legend()
+plt.grid()
+plt.show()
